@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Cálculo Numérico</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <h1>Calculadora de Cálculo Numérico</h1>
+        <p>Uma ferramenta baseada nos materiais da Professora Tânia Camila Kochmanscky Goulart[cite: 3, 260, 273, 381].</p>
+    </header>
+
+    <main>
+        <section class="calculator-section">
+            <h2>Sistema Linear: Eliminação de Gauss</h2>
+            <p>Insira a matriz aumentada do sistema linear. Por exemplo, para um sistema 3x3.</p>
+            <div class="input-group">
+                <label for="matrix-size">Tamanho do Sistema (N x N):</label>
+                <input type="number" id="matrix-size" value="3" min="2" max="10">
+                <button onclick="createMatrixInputs()">Gerar Matriz</button>
+            </div>
+            <div id="gauss-matrix-container"></div>
+            <button class="calculate-btn" onclick="solveGaussianElimination()">Calcular</button>
+            <div class="results">
+                <h3>Resultado:</h3>
+                <pre id="gauss-result"></pre>
+            </div>
+        </section>
+
+        <section class="calculator-section">
+            <h2>Zeros de Funções: Método da Bissecção</h2>
+            <p>Encontra a raiz de uma função f(x) = 0 em um dado intervalo [a, b][cite: 52, 53].</p>
+            <div class="input-group">
+                <label for="bisection-function">Função f(x):</label>
+                <input type="text" id="bisection-function" placeholder="ex: x^3 - 9*x + 3">
+            </div>
+            <div class="input-group">
+                <label for="bisection-a">Início do Intervalo (a):</label>
+                <input type="number" id="bisection-a" step="any" placeholder="ex: 0">
+            </div>
+            <div class="input-group">
+                <label for="bisection-b">Fim do Intervalo (b):</label>
+                <input type="number" id="bisection-b" step="any" placeholder="ex: 1">
+            </div>
+            <div class="input-group">
+                <label for="bisection-tolerance">Tolerância (ε):</label>
+                <input type="number" id="bisection-tolerance" step="any" placeholder="ex: 0.001">
+            </div>
+             <div class="input-group">
+                <label for="max-iterations">Máx. de Iterações:</label>
+                <input type="number" id="max-iterations" value="100">
+            </div>
+            <button class="calculate-btn" onclick="solveBisectionMethod()">Calcular</button>
+            <div class="results">
+                <h3>Desenvolvimento e Resposta:</h3>
+                <pre id="bisection-result"></pre>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Desenvolvido como um diferencial para a matéria de Cálculo Numérico.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
