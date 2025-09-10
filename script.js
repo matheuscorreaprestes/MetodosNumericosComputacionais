@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createMatrixInputs();
 });
 
-// --- LÓGICA PARA ELIMINAÇÃO DE GAUSS ---
+// --- LÓGICA PARA ELIMINAÇÃO DE GAUSS (COM PASSO A PASSO) ---
 
 function createMatrixInputs() {
     const size = parseInt(document.getElementById('matrix-size').value);
@@ -19,7 +19,6 @@ function createMatrixInputs() {
             input.placeholder = `a${i+1}${j+1}`;
             container.appendChild(input);
         }
-        // Adiciona a barra vertical e o input para o vetor b
         const separator = document.createElement('span');
         separator.innerText = '|';
         container.appendChild(separator);
@@ -32,11 +31,23 @@ function createMatrixInputs() {
     }
 }
 
+// Função auxiliar para formatar a matriz para exibição
+function formatMatrix(matrix) {
+    let text = "";
+    matrix.forEach(row => {
+        row.forEach(val => {
+            text += `${val.toFixed(2).padStart(8)} `;
+        });
+        text += '\n';
+    });
+    return text;
+}
+
 function solveGaussianElimination() {
     const size = parseInt(document.getElementById('matrix-size').value);
     const matrix = [];
+    let resultText = "--- Início da Eliminação de Gauss ---\n\n";
 
-    // Lê os valores da matriz e do vetor b a partir dos inputs
     for (let i = 0; i < size; i++) {
         matrix[i] = [];
         for (let j = 0; j <= size; j++) {
@@ -49,41 +60,62 @@ function solveGaussianElimination() {
         }
     }
 
-    // --- Início do Algoritmo de Eliminação de Gauss ---
+    resultText += "Matriz Aumentada Inicial (Etapa k=0):\n";
+    resultText += formatMatrix(matrix) + "\n";
     
-    // Etapa de Triangularização (com pivoteamento parcial)
-    for (let k = 0; k < size; k++) {
-        // Pivoteamento: troca de linhas para estabilidade numérica
-        // Conforme sugerido no material sobre matriz de permutação [cite: 32]
+    // --- Fase de Eliminação (Triangularização) ---
+    resultText += "--- Fase de Eliminação (Triangularização) ---\n\n";
+    for (let k = 0; k < size - 1; k++) {
+        resultText += `Etapa k=${k+1} (zerando a coluna ${k+1}):\n`;
+        
+        // Pivoteamento parcial para estabilidade
         let maxRow = k;
         for (let i = k + 1; i < size; i++) {
             if (Math.abs(matrix[i][k]) > Math.abs(matrix[maxRow][k])) {
                 maxRow = i;
             }
         }
-        [matrix[k], matrix[maxRow]] = [matrix[maxRow], matrix[k]]; // Troca as linhas
+        if (maxRow !== k) {
+            [matrix[k], matrix[maxRow]] = [matrix[maxRow], matrix[k]];
+            resultText += `   -> Pivoteamento: Trocando linha ${k+1} com a linha ${maxRow+1}.\n`;
+            resultText += formatMatrix(matrix) + "\n";
+        }
 
         // Zera os elementos abaixo do pivô
         for (let i = k + 1; i < size; i++) {
             const factor = matrix[i][k] / matrix[k][k];
+            resultText += `   -> Operação: L${i+1} <- L${i+1} - (${factor.toFixed(4)}) * L${k+1}\n`;
             for (let j = k; j <= size; j++) {
                 matrix[i][j] -= factor * matrix[k][j];
             }
         }
+        resultText += "   Matriz após a etapa:\n";
+        resultText += formatMatrix(matrix) + "\n";
     }
 
-    // Etapa de Retro-substituição
+    // --- Fase de Retro-substituição ---
+    resultText += "--- Fase de Retro-substituição ---\n\n";
+    resultText += "Matriz Triangular Superior Final:\n";
+    resultText += formatMatrix(matrix) + "\n";
+    
     const solution = new Array(size);
     for (let i = size - 1; i >= 0; i--) {
         let sum = 0;
+        let equation = `${matrix[i][i].toFixed(2)}*x${i+1}`;
+        
         for (let j = i + 1; j < size; j++) {
             sum += matrix[i][j] * solution[j];
+            equation += ` + ${matrix[i][j].toFixed(2)}*(${solution[j].toFixed(2)})`;
         }
         solution[i] = (matrix[i][size] - sum) / matrix[i][i];
+        
+        resultText += `Cálculo de x${i+1}:\n`;
+        resultText += `   ${equation} = ${matrix[i][size].toFixed(2)}\n`;
+        resultText += `   -> x${i+1} = ${solution[i].toFixed(4)}\n\n`;
     }
     
-    // Apresenta o resultado
-    let resultText = "O sistema foi resolvido.\n\nSolução (vetor x):\n";
+    // Apresenta o resultado final
+    resultText += "--- Solução Final ---\n";
     solution.forEach((val, i) => {
         resultText += `x${i+1} = ${val.toFixed(4)}\n`;
     });
@@ -92,7 +124,7 @@ function solveGaussianElimination() {
 }
 
 
-// --- LÓGICA PARA O MÉTODO DA BISSECÇÃO ---
+// --- LÓGICA PARA O MÉTODO DA BISSECÇÃO (COM PASSO A PASSO) ---
 
 function solveBisectionMethod() {
     const funcStr = document.getElementById('bisection-function').value;
@@ -101,6 +133,7 @@ function solveBisectionMethod() {
     const tolerance = parseFloat(document.getElementById('bisection-tolerance').value);
     const maxIterations = parseInt(document.getElementById('max-iterations').value);
     const resultContainer = document.getElementById('bisection-result');
+    let resultText = "";
 
     if (!funcStr || isNaN(a) || isNaN(b) || isNaN(tolerance)) {
         resultContainer.innerText = "Erro: Preencha todos os campos.";
@@ -122,43 +155,63 @@ function solveBisectionMethod() {
         return;
     }
     
-    // Verifica o Teorema de Bolzano [cite: 109, 110, 111]
+    resultText += "--- Início do Método da Bissecção ---\n\n";
+    resultText += `Fase I: Localização da Raiz\n`;
+    resultText += `Intervalo inicial: [${a}, ${b}]\n`;
+    resultText += `f(a) = f(${a}) = ${fa.toFixed(6)}\n`;
+    resultText += `f(b) = f(${b}) = ${fb.toFixed(6)}\n`;
+
+    // Verifica o Teorema de Bolzano
     if (fa * fb >= 0) {
-        resultContainer.innerText = "Erro: f(a) e f(b) devem ter sinais opostos para garantir uma raiz no intervalo.";
+        resultText += `\nErro: f(a) e f(b) devem ter sinais opostos para garantir uma raiz no intervalo (Teorema de Bolzano).\n`;
+        resultText += `f(a) * f(b) = ${ (fa * fb).toFixed(6) } >= 0`;
+        resultContainer.innerText = resultText;
         return;
     }
+    resultText += `Condição satisfeita: f(a) * f(b) < 0. Existe pelo menos uma raiz no intervalo.\n\n`;
     
     let current_a = a;
     let current_b = b;
     let iteration = 0;
-    let resultText = "Iterações (Fase de Refinamento):\n\n";
-    resultText += "Iteração |    a    |    b    |    p    |   f(p)   | b-a \n";
-    resultText += "---------------------------------------------------------\n";
+    resultText += "Fase II: Refinamento da Raiz\n";
+    resultText += "--------------------------------------------------------------------------------\n";
+    resultText += "Iter |     a     |     b     |     p     |    f(p)    |     Novo Intervalo     \n";
+    resultText += "--------------------------------------------------------------------------------\n";
 
-    while ((current_b - current_a) / 2 > tolerance && iteration < maxIterations) {
+    while (iteration < maxIterations) {
         const p = (current_a + current_b) / 2;
         const fp = f(p);
+        let nextInterval;
 
-        resultText += `${String(iteration+1).padStart(8)} | ${current_a.toFixed(4).padStart(7)} | ${current_b.toFixed(4).padStart(7)} | ${p.toFixed(4).padStart(7)} | ${fp.toFixed(4).padStart(8)} | ${(current_b - current_a).toFixed(4)}\n`;
-
-        if (fp === 0) { // Encontrou a raiz exata
-            current_a = p;
-            current_b = p;
+        // Critério de parada pelo tamanho do intervalo
+        if ((current_b - current_a) < tolerance) {
+            resultText += "\nCritério de parada atingido: (b - a) < tolerância.\n";
             break;
         }
 
+        // Lógica de atualização do intervalo
         if (f(current_a) * fp < 0) {
+            nextInterval = `[${current_a.toFixed(4)}, ${p.toFixed(4)}]`;
             current_b = p;
         } else {
+            nextInterval = `[${p.toFixed(4)}, ${current_b.toFixed(4)}]`;
             current_a = p;
         }
+        
+        resultText += `${String(iteration+1).padStart(4)} | ${current_a.toFixed(6).padStart(9)} | ${current_b.toFixed(6).padStart(9)} | ${p.toFixed(6).padStart(9)} | ${fp.toFixed(6).padStart(10)} | ${nextInterval.padStart(22)}\n`;
+
         iteration++;
     }
 
+    if (iteration >= maxIterations) {
+        resultText += "\nCritério de parada atingido: Número máximo de iterações.\n";
+    }
+
     const root = (current_a + current_b) / 2;
+    resultText += "--------------------------------------------------------------------------------\n";
     resultText += "\n--- Conclusão ---\n";
     resultText += `A raiz aproximada é: ${root.toFixed(6)}\n`;
-    resultText += `Número de iterações: ${iteration + 1}`;
+    resultText += `Número de iterações: ${iteration}`;
     
     resultContainer.innerText = resultText;
 }
